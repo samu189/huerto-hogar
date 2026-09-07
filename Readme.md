@@ -12,9 +12,9 @@ HuertoHogar nace con el objetivo de conectar a pequeños productores locales con
 
 ## 👥 Equipo de Trabajo y Roles
 
-* **Integrante 1 (Líder / Documentación):** Maquetación HTML base, arquitectura del proyecto, coordinación general del repositorio y documentación técnica (README.md y ERS).
-* **Integrante 2 (Diseño Visual / CSS):** Estilos globales CSS, tipografías (Google Fonts), maquetación de tarjetas de productos en catálogo y diseño responsivo adaptado a móviles.
-* **Integrante 3 (Interactividad / JavaScript):** Lógica JavaScript en cliente, validaciones de formularios con Expresiones Regulares y simulador interactivo de carrito de compras.
+* Samuel Berrios (Líder / Documentación):** Maquetación HTML base, arquitectura del proyecto, coordinación general del repositorio y documentación técnica (README.md y ERS).
+* Antonio Espinoza (Diseño Visual / CSS):** Estilos globales CSS, tipografías (Google Fonts), maquetación de tarjetas de productos en catálogo y diseño responsivo adaptado a móviles.
+* Tomas Gonzales (Interactividad / JavaScript):** Lógica JavaScript en cliente, validaciones de formularios con Expresiones Regulares y simulador interactivo de carrito de compras.
 
 ---
 
