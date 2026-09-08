@@ -86,6 +86,9 @@ function agregarAlCarrito(id) {
   carrito.push(id);
   localStorage.setItem('carrito', JSON.stringify(carrito));
   actualizarBadgeCarrito();
+  
+  // Alerta visual que confirma al usuario el producto añadido
+  alert(`¡Producto ${id} agregado al carrito!`);
 }
 
 function actualizarBadgeCarrito() {
