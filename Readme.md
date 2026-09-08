@@ -34,6 +34,7 @@ huerto-hogar/
 ├── index.html           # Página de inicio e información principal
 ├── productos.html       # Catálogo e-commerce de frutas y verduras
 ├── contacto.html        # Formulario de contacto validado con JS
+├── registro.html        # Formulario registrado validado con JS
 ├── css/
 │   └── styles.css       # Hoja de estilos principal y media queries
 ├── js/
