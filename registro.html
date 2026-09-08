@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HuertoHogar - Registro</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>HuertoHogar</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="productos.html">Catálogo</a></li>
+        <li><a href="registro.html">Registro</a></li>
+        <li><a href="contacto.html">Contacto</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Registro de Usuario</h2>
+      <form id="formRegistro">
+        <div>
+          <label for="nombre">Nombre Completo:</label>
+          <input type="text" id="nombre" name="nombre">
+          <span id="errNombre" style="color:red;"></span>
+        </div>
+        <div>
+          <label for="email">Correo Electrónico:</label>
+          <input type="email" id="email" name="email">
+          <span id="errEmail" style="color:red;"></span>
+        </div>
+        <button type="submit" class="btn">Registrar</button>
+        <p id="msgExito" style="color:green;"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 HuertoHogar - Todos los derechos reservados.</p>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>
