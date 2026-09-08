@@ -28,6 +28,7 @@ header h1 {
 nav ul {
   list-style: none;
   display: flex;
+  align-items: center;
   gap: 15px;
   margin: 0;
   padding: 0;
@@ -176,7 +177,7 @@ footer {
   margin-top: 3rem;
 }
 
-/* Adaptabilidad a Pantallas Pequeñas (Móviles) */
+/* Adaptabilidad a Pantallas Pequeñas */
 @media (max-width: 768px) {
   header {
     flex-direction: column;
@@ -185,6 +186,7 @@ footer {
   }
   nav ul {
     justify-content: center;
+    flex-wrap: wrap;
   }
   main {
     padding: 1rem;

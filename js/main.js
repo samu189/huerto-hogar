@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --- 1. VALIDACIÓN DEL FORMULARIO DE CONTACTO ---
+  // 1. VALIDACIÓN DEL FORMULARIO DE CONTACTO
   const formContacto = document.getElementById("formContacto");
 
   if (formContacto) {
@@ -11,26 +11,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email").value.trim();
       const mensaje = document.getElementById("mensaje").value.trim();
 
-      // Limpiar errores previos
       document.getElementById("errNombre").textContent = "";
       document.getElementById("errEmail").textContent = "";
       document.getElementById("errMensaje").textContent = "";
       document.getElementById("msgExito").textContent = "";
 
-      // Validar Nombre
       if (nombre === "") {
         document.getElementById("errNombre").textContent = "El nombre es obligatorio.";
         valido = false;
       }
 
-      // Validar Email restringido
       const emailRegex = /^[\w.-]+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/i;
       if (!emailRegex.test(email)) {
         document.getElementById("errEmail").textContent = "El correo debe ser @duoc.cl, @profesor.duoc.cl o @gmail.com.";
         valido = false;
       }
 
-      // Validar Mensaje mínimo 10 caracteres
       if (mensaje.length < 10) {
         document.getElementById("errMensaje").textContent = "El mensaje debe tener al menos 10 caracteres.";
         valido = false;
@@ -43,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 2. VALIDACIÓN DEL FORMULARIO DE REGISTRO
   const formRegistro = document.getElementById("formRegistro");
 
   if (formRegistro) {
@@ -57,18 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const errEmail = document.getElementById("errEmail");
       const msgExito = document.getElementById("msgExito");
 
-      // Limpiar errores
       if (errNombre) errNombre.textContent = "";
       if (errEmail) errEmail.textContent = "";
       if (msgExito) msgExito.textContent = "";
 
-      // Validar Nombre
       if (nombre === "") {
         if (errNombre) errNombre.textContent = "El nombre es obligatorio.";
         valido = false;
       }
 
-      // Validar Email
       const emailRegex = /^[\w.-]+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/i;
       if (!emailRegex.test(email)) {
         if (errEmail) errEmail.textContent = "El correo debe ser @duoc.cl, @profesor.duoc.cl o @gmail.com.";
@@ -86,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarBadgeCarrito();
 });
 
-// --- 3. GESTIÓN DEL CARRITO CON LOCALSTORAGE ---
+// 3. GESTIÓN DEL CARRITO CON LOCALSTORAGE
 function agregarAlCarrito(id) {
   let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
   carrito.push(id);
