@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   // --- 1. VALIDACIÓN DEL FORMULARIO DE CONTACTO ---
-  const form = document.getElementById("formContacto");
+  const formContacto = document.getElementById("formContacto");
 
-  if (form) {
-    form.addEventListener("submit", (e) => {
+  if (formContacto) {
+    formContacto.addEventListener("submit", (e) => {
       e.preventDefault();
 
       let valido = true;
@@ -23,10 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
         valido = false;
       }
 
-      // Validar Email con Expresión Regular
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // Validar Email restringido por pauta (@duoc.cl, @profesor.duoc.cl, @gmail.com)
+      const emailRegex = /^[\w.-]+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/i;
       if (!emailRegex.test(email)) {
-        document.getElementById("errEmail").textContent = "Ingresa un correo electrónico válido.";
+        document.getElementById("errEmail").textContent = "El correo debe ser @duoc.cl, @profesor.duoc.cl o @gmail.com.";
         valido = false;
       }
 
@@ -36,25 +36,29 @@ document.addEventListener("DOMContentLoaded", () => {
         valido = false;
       }
 
-      // Envío exitoso
       if (valido) {
-        document.getElementById("msgExito").textContent = "¡Mensaje enviado con éxito! Nos contactaremos pronto.";
-        form.reset();
+        document.getElementById("msgExito").textContent = "¡Mensaje enviado con éxito!";
+        formContacto.reset();
       }
     });
   }
 
-  // --- 2. SIMULADOR DE CARRITO DE COMPRAS ---
-  let contadorCarrito = 0;
-  const botonesAgregar = document.querySelectorAll(".btn");
-
-  botonesAgregar.forEach((boton) => {
-    // Evitar asignar la alerta al botón de enviar formulario
-    if (boton.getAttribute("type") !== "submit") {
-      boton.addEventListener("click", () => {
-        contadorCarrito++;
-        alert(`¡Producto añadido al carrito! Total acumulado: ${contadorCarrito} producto(s)`);
-      });
-    }
-  });
+  // Cargar estado inicial del carrito
+  actualizarBadgeCarrito();
 });
+
+// --- 2. GESTIÓN DEL CARRITO CON LOCALSTORAGE ---
+function agregarAlCarrito(id) {
+  let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  carrito.push(id);
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  actualizarBadgeCarrito();
+}
+
+function actualizarBadgeCarrito() {
+  const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  const badge = document.getElementById('cart-count');
+  if (badge) {
+    badge.textContent = `Cart (${carrito.length})`;
+  }
+}
