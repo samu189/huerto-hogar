@@ -10,9 +10,12 @@ export default function Nosotros() {
           <p>Entregamos herramientas, insumos de primera calidad y asesoría técnica especializada para que transformes tu hogar en un espacio verde y lleno de vida.</p>
         </div>
         <div className="col-md-6">
-          <div className="bg-light p-5 text-center rounded shadow-sm fs-3 text-secondary">
-            400 x 300 - Imagen Nosotros
-          </div>
+          <img
+            src="https://images.unsplash.com/photo-1592150621744-aca64f48394a?auto=format&fit=crop&w=800&q=80"
+            alt="Plantas cultivadas dentro de un hogar"
+            className="img-fluid rounded shadow-sm w-100"
+            style={{ height: '300px', objectFit: 'cover' }}
+          />
         </div>
       </div>
     </div>

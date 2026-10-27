@@ -14,6 +14,7 @@ export default function Categorias({ categorias, productos, agregarAlCarrito }) 
               {prodsCat.length > 0 ? prodsCat.map(p => (
                 <div key={p.id} className="col">
                   <div className="card h-100 shadow-sm">
+                    <img src={p.imagen} className="card-img-top" alt={p.nombre} style={{ height: '160px', objectFit: 'cover' }} />
                     <div className="card-body">
                       <h5 className="card-title">{p.nombre}</h5>
                       <p className="text-success fw-bold">${p.precio.toLocaleString('es-CL')}</p>
