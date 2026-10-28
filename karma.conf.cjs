@@ -67,6 +67,10 @@ module.exports = function (config) {
 
     coverageReporter: {
       dir: 'coverage/',
+      // Umbrales mínimos exigidos (80 %): si la cobertura baja de esto, npm test falla.
+      check: {
+        global: { statements: 80, branches: 80, functions: 80, lines: 80 }
+      },
       reporters: [
         { type: 'html', subdir: 'html' },
         { type: 'text-summary' },
