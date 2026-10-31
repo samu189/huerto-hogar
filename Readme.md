@@ -1,43 +1,80 @@
-# HuertoHogar - Plataforma E-Commerce de Productos Orgánicos 🌾🥦
+# HuertoHogar 2.0 🌱
 
-¡Bienvenido al repositorio oficial de **HuertoHogar**! Este proyecto consiste en el desarrollo de una plataforma web interactiva orientada a la comercialización y distribución de frutas, verduras y productos orgánicos de cultivo local.
+Tienda web de semillas, sustratos, herramientas y fertilizantes para huertos urbanos.
+Proyecto de la **Evaluación Parcial N°2 de DSY1104 (Desarrollo Fullstack II, sección 003D, Duoc UC)**:
+migración del sitio estático de la EP1 a una aplicación **React + Bootstrap**, con pruebas unitarias en **Jasmine y Karma**.
 
----
+## 👥 Equipo
 
-## 📋 Descripción del Proyecto
+- Samuel Berrios
+- Antonio Espinoza
+- Tomas Gonzalez Llanos
 
-HuertoHogar nace con el objetivo de conectar a pequeños productores locales con consumidores finales, ofreciendo una experiencia web intuitiva, rápida y adaptada a dispositivos móviles. La plataforma permite explorar el catálogo de productos, simular compras y enviar consultas directas al equipo de atención.
+## 🛠️ Tecnologías
 
----
+| Área | Herramienta |
+|---|---|
+| Interfaz | React 18.3 (componentes, props, `useState`, `useEffect`) |
+| Diseño responsivo | Bootstrap 5.3 y Bootstrap Icons |
+| Servidor de desarrollo y empaquetado | Vite 5.4 |
+| Persistencia | `localStorage` del navegador (servicio `src/data/data.js`) |
+| Pruebas unitarias | Jasmine 4.6 + Karma 6.4 + React Testing Library |
+| Cobertura | karma-coverage (Istanbul), umbral mínimo de 80 % |
+| Control de versiones | Git y GitHub (ramas `feature/*` y pull requests a `main`) |
 
-## 👥 Equipo de Trabajo y Roles
+## ✨ Funcionalidades
 
-* Samuel Berrios (Líder / Documentación):** Maquetación HTML base, arquitectura del proyecto, coordinación general del repositorio y documentación técnica (README.md y ERS).
-* Antonio Espinoza (Diseño Visual / CSS):** Estilos globales CSS, tipografías (Google Fonts), maquetación de tarjetas de productos en catálogo y diseño responsivo adaptado a móviles.
-* Tomas Gonzales (Interactividad / JavaScript):** Lógica JavaScript en cliente, validaciones de formularios con Expresiones Regulares y simulador interactivo de carrito de compras.
+- **Tienda pública:** inicio, catálogo con búsqueda y filtro por categoría, detalle de producto, categorías, ofertas, blog, nosotros y contacto con validación.
+- **Carrito y compra:** carrito con cantidades, checkout con datos de despacho y pago simulado (exitoso o rechazado) que registra la orden y descuenta stock.
+- **Cuentas:** registro e inicio de sesión con roles Cliente y Administrador.
+- **Panel de administración:** métricas de ventas, CRUD de productos, stock crítico, categorías y usuarios.
 
----
+Cuenta de prueba del administrador: `admin@huertohogar.cl` / `admin123`.
 
-## 🛠️ Tecnologías Utilizadas
+## 🚀 Cómo ejecutar
 
-* **HTML5:** Estructuración semántica de las páginas web (`index.html`, `productos.html`, `contacto.html`).
-* **CSS3:** Diseño responsivo con Flexbox y CSS Grid, efectos hover e integración de Google Fonts (*Montserrat* y *Playfair Display*).
-* **JavaScript (ES6+):** Validación dinámica de formularios en tiempo real y lógica interactiva de carrito.
-* **Git & GitHub:** Control de versiones, trabajo colaborativo basado en ramas (`feature/css-estilos`, `feature/js-validaciones`) y resolución de Pull Requests.
+Requiere Node.js 18 o superior.
 
----
+```bash
+npm install
+npm run dev        # abrir http://localhost:5173/app.html
+```
 
-## 📁 Estructura del Repositorio
+## 🧪 Pruebas unitarias
+
+```bash
+npm test           # Karma abre Chrome, ejecuta las 34 pruebas y genera la cobertura
+npm run test:ci    # lo mismo en modo headless (sin abrir ventana)
+```
+
+- 34 pruebas en 3 archivos de `src/tests/`: `HuertoHogar.spec.js` (10, componentes), `DataService.spec.js` (16, servicio de datos) y `ComponentesExtra.spec.js` (8, componentes).
+- Los mocks se hacen con `jasmine.createSpy`.
+- Resultado de la última medición sobre los 5 archivos probados (Navbar, Productos, Contacto, Footer y `data.js`): 100 % de sentencias, 98,48 % de ramas, 100 % de funciones y 100 % de líneas.
+- El informe HTML queda en `coverage/html/index.html`.
+- Los componentes sin pruebas automatizadas (App, AdminDashboard, CarritoCheckout, LoginRegistro y otros) están registrados como riesgo residual en el informe de cobertura.
+
+## 📁 Estructura del repositorio
 
 ```text
 huerto-hogar/
-├── index.html           # Página de inicio e información principal
-├── productos.html       # Catálogo e-commerce de frutas y verduras
-├── contacto.html        # Formulario de contacto validado con JS
-├── registro.html        # Formulario registrado validado con JS
-├── css/
-│   └── styles.css       # Hoja de estilos principal y media queries
-├── js/
-│   └── main.js          # Lógica JavaScript y eventos
-├── img/                 # Imágenes de productos e identidad visual
-└── README.md            # Documentación general del repositorio
+├── app.html               # entrada de la tienda React
+├── index.html             # sitio estático de la EP1 (se conserva)
+├── src/
+│   ├── main.jsx           # monta la aplicación y carga Bootstrap
+│   ├── App.jsx            # estado global (carrito, sesión, vista actual)
+│   ├── components/        # un componente por vista (Navbar, Productos, Contacto, etc.)
+│   ├── data/data.js       # servicio de datos sobre localStorage
+│   └── tests/             # pruebas Jasmine (*.spec.js)
+├── karma.conf.cjs         # configuración de Karma y umbrales de cobertura
+├── vite.config.js
+├── docs/                  # ERS, informe de cobertura y planilla de requerimientos
+└── Readme.md
+```
+
+## 📄 Documentación
+
+En la carpeta `docs/`:
+
+- `ERS_HuertoHogar_v2.1.docx`: Especificación de Requisitos de Software (IEEE 830).
+- `DSY1104-003D-HuertoHogar-ICP-001_v1.0.docx`: informe de cobertura de pruebas.
+- `Planilla_Requerimientos_HuertoHogar.xlsx`: los 35 requerimientos con su criterio de aceptación y estado.
