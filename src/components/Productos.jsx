@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-export default function Productos({ productos, agregarAlCarrito, setProductoSeleccionado, setVistaActual }) {
+export default function Productos({ productos, agregarAlCarrito, setProductoSeleccionado, setVistaActual, categorias }) {
+  // Las opciones del filtro salen de las categorías del backend (o de los productos, si no se entregan).
+  const opciones = categorias && categorias.length > 0
+    ? categorias.map(c => c.nombre || c)
+    : [...new Set(productos.map(p => p.categoria))];
   const [busqueda, setBusqueda] = useState('');
   const [catFiltro, setCatFiltro] = useState('Todas');
 
@@ -27,10 +31,7 @@ export default function Productos({ productos, agregarAlCarrito, setProductoSele
         <div className="col-md-6">
           <select className="form-select" value={catFiltro} onChange={(e) => setCatFiltro(e.target.value)}>
             <option value="Todas">Todas las categorías</option>
-            <option value="Semillas">Semillas</option>
-            <option value="Sustratos">Sustratos</option>
-            <option value="Herramientas">Herramientas</option>
-            <option value="Fertilizantes">Fertilizantes</option>
+            {opciones.map(nombre => <option key={nombre} value={nombre}>{nombre}</option>)}
           </select>
         </div>
       </div>

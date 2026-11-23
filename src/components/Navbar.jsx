@@ -1,4 +1,5 @@
 import React from 'react';
+import { puedeVerPanel, nombrePanel } from '../services/permisos';
 
 export default function Navbar({ vistaActual, setVistaActual, carritoCount, totalCarrito, usuario, setUsuario }) {
   return (
@@ -49,7 +50,12 @@ export default function Navbar({ vistaActual, setVistaActual, carritoCount, tota
                   👤 {usuario.nombre}
                 </button>
                 <ul className="dropdown-menu dropdown-menu-end">
-                  <li><button className="dropdown-item btn border-0 w-100 text-start" onClick={() => setVistaActual('admin')}>Panel Admin</button></li>
+                  {usuario.rol && <li><span className="dropdown-item-text small text-muted">Rol: {usuario.rol}</span></li>}
+                  {/* El panel solo aparece para administrador y vendedor; el cliente solo ve la tienda */}
+                  {puedeVerPanel(usuario) && (
+                    <li><button className="dropdown-item btn border-0 w-100 text-start" onClick={() => setVistaActual('admin')}>{nombrePanel(usuario)}</button></li>
+                  )}
+                  <li><button className="dropdown-item btn border-0 w-100 text-start" onClick={() => setVistaActual('mis_compras')}>Mis Compras</button></li>
                   <li><hr className="dropdown-divider" /></li>
                   <li><button className="dropdown-item btn border-0 w-100 text-start text-danger" onClick={() => setUsuario(null)}>Cerrar Sesión</button></li>
                 </ul>

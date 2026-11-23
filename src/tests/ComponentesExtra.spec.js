@@ -60,14 +60,29 @@ describe('Pruebas complementarias de componentes', () => {
     expect(setVistaActual).toHaveBeenCalledWith('registro');
   });
 
-  it('EXTRA 4: con sesión, muestra el nombre, abre el Panel Admin y permite cerrar sesión', () => {
-    const { setVistaActual, setUsuario } = renderNavbar({ usuario: { nombre: 'Pedro' } });
+  it('EXTRA 4: un ADMIN ve su nombre, rol, Panel Admin y puede cerrar sesión', () => {
+    const { setVistaActual, setUsuario } = renderNavbar({ usuario: { nombre: 'Pedro', rol: 'ADMIN' } });
     expect(screen.getByText(/Pedro/)).toBeDefined();
+    expect(screen.getByText('Rol: ADMIN')).toBeDefined();
     expect(screen.queryByText('Iniciar Sesión')).toBeNull();
     fireEvent.click(screen.getByText('Panel Admin'));
+    fireEvent.click(screen.getByText('Mis Compras'));
     fireEvent.click(screen.getByText('Cerrar Sesión'));
     expect(setVistaActual).toHaveBeenCalledWith('admin');
+    expect(setVistaActual).toHaveBeenCalledWith('mis_compras');
     expect(setUsuario).toHaveBeenCalledWith(null);
+  });
+
+  it('EXTRA 4b: restricción por rol: el vendedor ve "Panel Vendedor" y el cliente no ve ningún panel', () => {
+    const { unmount } = render(
+      <Navbar vistaActual="home" setVistaActual={() => {}} carritoCount={0} totalCarrito={0} usuario={{ nombre: 'Valentina', rol: 'VENDEDOR' }} setUsuario={() => {}} />
+    );
+    expect(screen.getByText('Panel Vendedor')).toBeDefined();
+    unmount();
+    renderNavbar({ usuario: { nombre: 'Ana', rol: 'CLIENTE' } });
+    expect(screen.queryByText('Panel Admin')).toBeNull();
+    expect(screen.queryByText('Panel Vendedor')).toBeNull();
+    expect(screen.getByText('Mis Compras')).toBeDefined();
   });
 
   it('EXTRA 5: contacto muestra error si faltan nombre o correo', () => {
@@ -92,6 +107,12 @@ describe('Pruebas complementarias de componentes', () => {
     fireEvent.change(screen.getByDisplayValue('Todas las categorías'), { target: { value: 'Sustratos' } });
     expect(screen.getByText('Sustrato 10L')).toBeDefined();
     expect(screen.queryByText('Tomate Limachino')).toBeNull();
+  });
+
+  it('EXTRA 7b: el filtro usa las categorías que entrega el backend', () => {
+    render(<Productos productos={mockProductos} categorias={[{ id: 1, nombre: 'Semillas' }, { id: 2, nombre: 'Sustratos' }, { id: 3, nombre: 'Herramientas' }]}
+      agregarAlCarrito={() => {}} setProductoSeleccionado={() => {}} setVistaActual={() => {}} />);
+    expect(screen.getByRole('option', { name: 'Herramientas' })).toBeDefined();
   });
 
   it('EXTRA 8: "Ver Detalle" selecciona el producto y cambia a la vista de detalle', () => {

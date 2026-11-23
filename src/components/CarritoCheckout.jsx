@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 
-export default function CarritoCheckout({ carrito, setCarrito, totalCarrito, setResultadoPago, setVistaActual, usuario }) {
+export default function CarritoCheckout({ carrito, setCarrito, totalCarrito, onPagar, onPagoRechazado, setVistaActual, usuario }) {
   const [cliente, setCliente] = useState({
-    nombre: usuario ? usuario.nombre : 'Pedro',
-    apellido: usuario ? usuario.apellido : 'Hacker',
-    correo: usuario ? usuario.correo : 'pedro.hacker20@example.com',
+    nombre: usuario ? usuario.nombre : '',
+    apellido: usuario ? usuario.apellido : '',
+    correo: usuario ? usuario.correo : '',
     calle: 'Los Crisantemos, Edificio Norte',
     depto: 'Depto 603',
     region: 'Región Metropolitana de Santiago',
     comuna: 'Cerrillos',
     indicaciones: 'El martes no estaremos en el depto, dejar con conserje.'
   });
+  const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState('');
 
   const cambiarCantidad = (id, delta) => {
     const nuevo = carrito.map(item => {
@@ -23,13 +25,27 @@ export default function CarritoCheckout({ carrito, setCarrito, totalCarrito, set
     setCarrito(nuevo);
   };
 
-  const procesarPago = (simularError = false) => {
+  // El pago se envía al backend (POST /api/v1/boletas). Si falla (por ejemplo, sin stock), se muestra el mensaje de la API.
+  const procesarPago = async () => {
     if (carrito.length === 0) return;
-    const datosFinales = { cliente, carrito, total: totalCarrito, exito: !simularError };
-    setResultadoPago(datosFinales);
-    if (!simularError) setCarrito([]);
-    setVistaActual('resultado_pago');
+    setError('');
+    setProcesando(true);
+    try {
+      await onPagar(cliente);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setProcesando(false);
+    }
   };
+
+  const campo = (clave, texto, tipo = 'text') => (
+    <div className="mb-2">
+      <label className="form-label small" htmlFor={`chk-${clave}`}>{texto}:</label>
+      <input id={`chk-${clave}`} type={tipo} className="form-control form-control-sm" value={cliente[clave]}
+        onChange={e => setCliente({ ...cliente, [clave]: e.target.value })} />
+    </div>
+  );
 
   return (
     <div className="container py-4">
@@ -45,13 +61,7 @@ export default function CarritoCheckout({ carrito, setCarrito, totalCarrito, set
               <div className="table-responsive">
                 <table className="table align-middle">
                   <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Precio</th>
-                      <th>Cant.</th>
-                      <th>Subtotal</th>
-                      <th></th>
-                    </tr>
+                    <tr><th>Producto</th><th>Precio</th><th>Cant.</th><th>Subtotal</th><th></th></tr>
                   </thead>
                   <tbody>
                     {carrito.map(item => (
@@ -83,21 +93,28 @@ export default function CarritoCheckout({ carrito, setCarrito, totalCarrito, set
         <div className="col-lg-5">
           <div className="card shadow-sm p-4">
             <h5 className="fw-bold mb-3">Información del Cliente y Dirección</h5>
-            <div className="mb-2"><label className="form-label small">Nombre:</label><input type="text" className="form-control form-control-sm" value={cliente.nombre} onChange={e => setCliente({...cliente, nombre: e.target.value})} /></div>
-            <div className="mb-2"><label className="form-label small">Apellido:</label><input type="text" className="form-control form-control-sm" value={cliente.apellido} onChange={e => setCliente({...cliente, apellido: e.target.value})} /></div>
-            <div className="mb-2"><label className="form-label small">Correo:</label><input type="email" className="form-control form-control-sm" value={cliente.correo} onChange={e => setCliente({...cliente, correo: e.target.value})} /></div>
-            <div className="mb-2"><label className="form-label small">Calle/Número:</label><input type="text" className="form-control form-control-sm" value={cliente.calle} onChange={e => setCliente({...cliente, calle: e.target.value})} /></div>
+            {!usuario && (
+              <div className="alert alert-warning py-2" id="avisoLogin">
+                Para comprar debes iniciar sesión.
+                <button className="btn btn-link btn-sm p-0 ms-1 align-baseline" onClick={() => setVistaActual('login')}>Iniciar sesión</button>
+              </div>
+            )}
+            {error && <div className="alert alert-danger py-2" id="errPago">{error}</div>}
+            {campo('nombre', 'Nombre')}
+            {campo('apellido', 'Apellido')}
+            {campo('correo', 'Correo', 'email')}
+            {campo('calle', 'Calle/Número')}
             <div className="row g-2 mb-2">
-              <div className="col"><label className="form-label small">Región:</label><input type="text" className="form-control form-control-sm" value={cliente.region} readOnly /></div>
-              <div className="col"><label className="form-label small">Comuna:</label><input type="text" className="form-control form-control-sm" value={cliente.comuna} onChange={e => setCliente({...cliente, comuna: e.target.value})} /></div>
+              <div className="col"><label className="form-label small" htmlFor="chk-region">Región:</label><input id="chk-region" type="text" className="form-control form-control-sm" value={cliente.region} readOnly /></div>
+              <div className="col"><label className="form-label small" htmlFor="chk-comuna">Comuna:</label><input id="chk-comuna" type="text" className="form-control form-control-sm" value={cliente.comuna} onChange={e => setCliente({ ...cliente, comuna: e.target.value })} /></div>
             </div>
-            <div className="mb-3"><label className="form-label small">Indicaciones:</label><textarea className="form-control form-control-sm" rows="2" value={cliente.indicaciones} onChange={e => setCliente({...cliente, indicaciones: e.target.value})}></textarea></div>
+            <div className="mb-3"><label className="form-label small" htmlFor="chk-indicaciones">Indicaciones:</label><textarea id="chk-indicaciones" className="form-control form-control-sm" rows="2" value={cliente.indicaciones} onChange={e => setCliente({ ...cliente, indicaciones: e.target.value })}></textarea></div>
 
             <div className="d-flex flex-column gap-2">
-              <button className="btn btn-success fw-bold py-2" disabled={carrito.length === 0} onClick={() => procesarPago(false)}>
-                ✅ Pagar Ahora ${totalCarrito.toLocaleString('es-CL')}
+              <button className="btn btn-success fw-bold py-2" id="btnPagar" disabled={carrito.length === 0 || !usuario || procesando} onClick={procesarPago}>
+                {procesando ? 'Procesando pago...' : `✅ Pagar Ahora $${totalCarrito.toLocaleString('es-CL')}`}
               </button>
-              <button className="btn btn-outline-danger btn-sm" disabled={carrito.length === 0} onClick={() => procesarPago(true)}>
+              <button className="btn btn-outline-danger btn-sm" disabled={carrito.length === 0} onClick={() => onPagoRechazado(cliente)}>
                 ⚠️ Simular Error en Pago
               </button>
             </div>
