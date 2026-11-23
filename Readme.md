@@ -3,7 +3,7 @@
 Tienda web de semillas, sustratos, herramientas y fertilizantes para huertos urbanos.
 Proyecto de **DSY1104 (Desarrollo Fullstack II, sección 003D, Duoc UC)**. Este repositorio es el **frontend React**.
 En la **Evaluación Parcial N°3** se conectó a un backend **Spring Boot + MySQL** con autenticación **JWT por roles**:
-👉 Backend: https://github.com/samu189/huerto-hogar-backend
+👉 Backend: https://github.com/antonioespinoza10/huerto-hogar-backend
 
 ## 👥 Equipo
 
