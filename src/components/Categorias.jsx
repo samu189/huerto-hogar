@@ -5,7 +5,8 @@ export default function Categorias({ categorias, productos, agregarAlCarrito }) 
     <div className="container py-4">
       <h2 className="fw-bold text-success mb-4">Nuestras Categorías</h2>
 
-      {categorias.map((cat, idx) => {
+      {categorias.map((c, idx) => {
+        const cat = c.nombre || c;
         const prodsCat = productos.filter(p => p.categoria === cat);
         return (
           <div key={idx} className="mb-5">

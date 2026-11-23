@@ -1,26 +1,34 @@
 import React, { useState } from 'react';
 
-// Vista de Iniciar Sesión / Crear Cuenta. Valida contra los usuarios guardados en localStorage (data.js).
-export default function LoginRegistro({ modo, setVistaActual, usuarios, onLogin, onRegistro }) {
+// Vista de Iniciar Sesión / Crear Cuenta. Las credenciales se validan en el backend (POST /api/v1/auth/...).
+export default function LoginRegistro({ modo, setVistaActual, onLogin, onRegistro }) {
   const esRegistro = modo === 'registro';
   const [form, setForm] = useState({ nombre: '', apellido: '', correo: '', password: '' });
   const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const correo = form.correo.trim().toLowerCase();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return setError('Ingresa un correo válido.');
     if (form.password === '') return setError('La contraseña es obligatoria.');
-
     if (esRegistro) {
       if (form.nombre.trim() === '' || form.apellido.trim() === '') return setError('Nombre y apellido son obligatorios.');
       if (form.password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.');
-      if (usuarios.some(u => u.correo === correo)) return setError('Ese correo ya está registrado.');
-      onRegistro({ nombre: form.nombre.trim(), apellido: form.apellido.trim(), correo, password: form.password });
-    } else {
-      const usuario = onLogin(correo, form.password);
-      if (!usuario) setError('Correo o contraseña incorrectos.');
+    }
+
+    setError('');
+    setEnviando(true);
+    try {
+      if (esRegistro) {
+        await onRegistro({ nombre: form.nombre.trim(), apellido: form.apellido.trim(), correo, password: form.password });
+      } else {
+        await onLogin(correo, form.password);
+      }
+    } catch (err) {
+      setError(err.message);
+      setEnviando(false);
     }
   };
 
@@ -50,13 +58,19 @@ export default function LoginRegistro({ modo, setVistaActual, usuarios, onLogin,
           <label className="form-label" htmlFor="accesoPassword">Contraseña:</label>
           <input type="password" id="accesoPassword" className="form-control" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
         </div>
-        <button type="submit" id="btnAcceso" className="btn btn-success w-100">{esRegistro ? 'Registrarme' : 'Entrar'}</button>
+        <button type="submit" id="btnAcceso" className="btn btn-success w-100" disabled={enviando}>
+          {enviando ? 'Validando...' : esRegistro ? 'Registrarme' : 'Entrar'}
+        </button>
 
         <button type="button" className="btn btn-link mt-2" onClick={() => setVistaActual(esRegistro ? 'login' : 'registro')}>
           {esRegistro ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
         </button>
         {!esRegistro && (
-          <small className="text-muted text-center d-block">Cuenta de prueba: admin@huertohogar.cl / admin123</small>
+          <div className="small text-muted text-center">
+            Cuentas de prueba:<br />
+            Admin: admin@huertohogar.cl / admin123<br />
+            Vendedor: vendedor@huertohogar.cl / vendedor123
+          </div>
         )}
       </form>
     </div>

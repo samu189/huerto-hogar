@@ -1,152 +1,131 @@
-// Servicio de Datos y Lógica CRUD con LocalStorage (HuertoHogar)
-// Simula una base de datos en el navegador: productos, categorías, usuarios y órdenes.
-// Cada colección se guarda como JSON en una clave de localStorage.
+// Servicio de datos de HuertoHogar (Evaluación 3).
+// Antes guardaba todo en localStorage; ahora cada función llama a la API REST del backend Spring Boot,
+// que guarda los datos en MySQL. Se mantienen los nombres de las funciones para que los componentes no cambien.
+import { request, guardarSesion, borrarSesion, leerSesion } from '../services/api';
 
-const CLAVES = {
-  productos: 'hh_productos',
-  categorias: 'hh_categorias',
-  usuarios: 'hh_usuarios',
-  ordenes: 'hh_ordenes'
+// El backend envía la categoría como objeto {id, nombre}; la tienda trabaja con el nombre.
+export const normalizarProducto = (p) => ({
+  ...p,
+  categoriaId: p.categoria?.id ?? p.categoriaId,
+  categoria: p.categoria?.nombre ?? p.categoria,
+  precioOferta: p.precioOferta ?? p.precio
+});
+
+// Precio que se cobra: el de oferta si corresponde (el backend calcula lo mismo).
+export const precioVigente = (p) => (p.oferta && p.precioOferta ? p.precioOferta : p.precio);
+
+// ---------- AUTENTICACIÓN ----------
+
+const iniciarSesionCon = (data) => {
+  guardarSesion({ token: data.token, refreshToken: data.refreshToken, usuario: data.usuario });
+  return data.usuario;
 };
 
-const PRODUCTOS_INICIALES = [
-  { id: 1, nombre: 'Semillas de Tomate Limachino', categoria: 'Semillas', precio: 2500, stock: 45, oferta: true, precioOferta: 1990, imagen: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=400&q=80', descripcion: 'Semillas orgánicas de alta germinación.' },
-  { id: 2, nombre: 'Kit Sustrato Orgánico 10L', categoria: 'Sustratos', precio: 8990, stock: 12, oferta: false, precioOferta: 8990, imagen: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=400&q=80', descripcion: 'Mezcla nutritiva ideal para maceteros.' },
-  { id: 3, nombre: 'Macetero Cerámica Biodegradable', categoria: 'Herramientas', precio: 4500, stock: 4, oferta: true, precioOferta: 3490, imagen: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=400&q=80', descripcion: 'Ecológico y resistente a la intemperie.' },
-  { id: 4, nombre: 'Fertilizante Humus de Lombriz 5kg', categoria: 'Fertilizantes', precio: 6200, stock: 2, oferta: true, precioOferta: 4990, imagen: 'https://images.unsplash.com/photo-1622383563227-04401ab4e5ea?auto=format&fit=crop&w=400&q=80', descripcion: 'Aporte de nitrógeno natural para tus plantas.' },
-  { id: 5, nombre: 'Semillas de Albahaca Silvestre', categoria: 'Semillas', precio: 1800, stock: 30, oferta: false, precioOferta: 1800, imagen: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80', descripcion: 'Aromática y fácil de cultivar en casa.' }
-];
+export async function loginUsuario(correo, password) {
+  const data = await request('/auth/login', { method: 'POST', body: { correo, password }, conToken: false });
+  return iniciarSesionCon(data);
+}
 
-const CATEGORIAS_INICIALES = ['Semillas', 'Sustratos', 'Herramientas', 'Fertilizantes'];
+export async function registrarUsuario(datos) {
+  const data = await request('/auth/registro', { method: 'POST', body: datos, conToken: false });
+  return iniciarSesionCon(data);
+}
 
-// Contraseñas en texto plano solo porque es una simulación académica (no hay backend).
-const USUARIOS_INICIALES = [
-  { id: 1, nombre: 'Pedro', apellido: 'Hacker', correo: 'pedro.hacker20@example.com', password: 'pedro123', rol: 'Cliente' },
-  { id: 2, nombre: 'Admin', apellido: 'Huerto', correo: 'admin@huertohogar.cl', password: 'admin123', rol: 'Administrador' }
-];
+export function cerrarSesion() {
+  borrarSesion();
+}
 
-// ---------- Helpers internos ----------
-
-// Lee una colección; si no existe o el JSON está dañado, devuelve un arreglo vacío.
-const leer = (clave) => {
+// Al recargar la página: si hay un token guardado, se valida contra el backend (/auth/me).
+export async function restaurarSesion() {
+  const sesion = leerSesion();
+  if (!sesion?.token) return null;
   try {
-    return JSON.parse(localStorage.getItem(clave)) || [];
+    const usuario = await request('/auth/me');
+    guardarSesion({ ...leerSesion(), usuario });
+    return usuario;
   } catch {
-    return [];
+    borrarSesion();
+    return null;
   }
-};
-
-const guardar = (clave, datos) => {
-  localStorage.setItem(clave, JSON.stringify(datos));
-};
-
-// Carga los datos iniciales solo la primera vez (si la clave no existe).
-export const initData = () => {
-  if (!localStorage.getItem(CLAVES.productos)) guardar(CLAVES.productos, PRODUCTOS_INICIALES);
-  if (!localStorage.getItem(CLAVES.categorias)) guardar(CLAVES.categorias, CATEGORIAS_INICIALES);
-  if (!localStorage.getItem(CLAVES.usuarios)) guardar(CLAVES.usuarios, USUARIOS_INICIALES);
-  if (!localStorage.getItem(CLAVES.ordenes)) guardar(CLAVES.ordenes, []);
-};
+}
 
 // ---------- PRODUCTOS (Create, Read, Update, Delete) ----------
 
-export const getProductos = () => leer(CLAVES.productos);
+export async function getProductos() {
+  const lista = await request('/productos', { conToken: false });
+  return lista.map(normalizarProducto);
+}
 
-// Si el producto trae id lo actualiza (Update); si no, lo crea con un id nuevo (Create).
-export const saveProducto = (producto) => {
-  const productos = getProductos();
-  if (producto.id) {
-    const index = productos.findIndex(p => p.id === producto.id);
-    if (index !== -1) productos[index] = producto;
-  } else {
-    productos.push({ ...producto, id: Date.now() });
-  }
-  guardar(CLAVES.productos, productos);
-  return productos;
-};
+export async function getProducto(id) {
+  return normalizarProducto(await request(`/productos/${id}`, { conToken: false }));
+}
 
-export const deleteProducto = (id) => {
-  const productos = getProductos().filter(p => p.id !== id);
-  guardar(CLAVES.productos, productos);
-  return productos;
-};
+// Si el producto trae id lo actualiza (PUT); si no, lo crea (POST).
+export async function saveProducto(producto) {
+  const body = {
+    nombre: producto.nombre,
+    descripcion: producto.descripcion,
+    precio: producto.precio,
+    stock: producto.stock,
+    oferta: Boolean(producto.oferta),
+    precioOferta: producto.oferta ? producto.precioOferta : null,
+    imagen: producto.imagen,
+    categoriaId: producto.categoriaId
+  };
+  const guardado = producto.id
+    ? await request(`/productos/${producto.id}`, { method: 'PUT', body })
+    : await request('/productos', { method: 'POST', body });
+  return normalizarProducto(guardado);
+}
+
+export const deleteProducto = (id) => request(`/productos/${id}`, { method: 'DELETE' });
 
 // ---------- CATEGORÍAS ----------
 
-export const getCategorias = () => leer(CLAVES.categorias);
+export const getCategorias = () => request('/categorias', { conToken: false });
 
-export const saveCategoria = (nuevaCat) => {
-  const nombre = nuevaCat.trim();
-  const categorias = getCategorias();
-  const existe = categorias.some(c => c.toLowerCase() === nombre.toLowerCase());
-  if (nombre !== '' && !existe) {
-    categorias.push(nombre);
-    guardar(CLAVES.categorias, categorias);
-  }
-  return categorias;
-};
+export const saveCategoria = (nombre) => request('/categorias', { method: 'POST', body: { nombre } });
 
-// No se borra una categoría que todavía tiene productos asociados.
-export const deleteCategoria = (nombre) => {
-  const enUso = getProductos().some(p => p.categoria === nombre);
-  if (enUso) return getCategorias();
-  const categorias = getCategorias().filter(c => c !== nombre);
-  guardar(CLAVES.categorias, categorias);
-  return categorias;
-};
+export const deleteCategoria = (id) => request(`/categorias/${id}`, { method: 'DELETE' });
 
-// ---------- USUARIOS ----------
+// ---------- USUARIOS (solo administrador) ----------
 
-export const getUsuarios = () => leer(CLAVES.usuarios);
+export const getUsuarios = () => request('/usuarios');
 
-export const saveUsuario = (usuario) => {
-  const usuarios = getUsuarios();
-  const datos = { ...usuario, correo: usuario.correo.trim().toLowerCase() };
-  if (datos.id) {
-    const index = usuarios.findIndex(u => u.id === datos.id);
-    if (index !== -1) usuarios[index] = datos;
-  } else {
-    usuarios.push({ ...datos, id: Date.now(), rol: datos.rol || 'Cliente' });
-  }
-  guardar(CLAVES.usuarios, usuarios);
-  return usuarios;
-};
+export const saveUsuario = (usuario) =>
+  usuario.id
+    ? request(`/usuarios/${usuario.id}`, { method: 'PUT', body: usuario })
+    : request('/usuarios', { method: 'POST', body: usuario });
 
-export const deleteUsuario = (id) => {
-  const usuarios = getUsuarios().filter(u => u.id !== id);
-  guardar(CLAVES.usuarios, usuarios);
-  return usuarios;
-};
+export const deleteUsuario = (id) => request(`/usuarios/${id}`, { method: 'DELETE' });
 
-// Devuelve el usuario si correo y contraseña coinciden; si no, null.
-export const loginUsuario = (correo, password) => {
-  const correoNormalizado = correo.trim().toLowerCase();
-  return getUsuarios().find(u => u.correo === correoNormalizado && u.password === password) || null;
-};
+// ---------- ÓRDENES (BOLETAS) ----------
 
-// ---------- ÓRDENES DE COMPRA ----------
-
-export const getOrdenes = () => leer(CLAVES.ordenes);
-
-// Guarda la compra y descuenta del stock las unidades vendidas.
-export const registrarOrden = ({ cliente, carrito, total }) => {
-  const ordenes = getOrdenes();
-  ordenes.push({
-    id: Date.now(),
-    fecha: new Date().toISOString(),
-    cliente: { nombre: cliente.nombre, apellido: cliente.apellido, correo: cliente.correo },
-    items: carrito.map(({ id, nombre, precio, cantidad }) => ({ id, nombre, precio, cantidad })),
-    total
+// Envía la compra al backend: solo ids y cantidades. El total y el stock los calcula el servidor.
+export const registrarOrden = (carrito, cliente) =>
+  request('/boletas', {
+    method: 'POST',
+    body: {
+      items: carrito.map((item) => ({ productoId: item.id, cantidad: item.cantidad })),
+      despacho: {
+        nombre: cliente.nombre,
+        apellido: cliente.apellido,
+        correo: cliente.correo,
+        calle: cliente.calle,
+        departamento: cliente.depto,
+        region: cliente.region,
+        comuna: cliente.comuna,
+        indicaciones: cliente.indicaciones
+      }
+    }
   });
-  guardar(CLAVES.ordenes, ordenes);
 
-  const productos = getProductos().map(p => {
-    const vendidos = carrito
-      .filter(item => item.id === p.id)
-      .reduce((suma, item) => suma + item.cantidad, 0);
-    return vendidos > 0 ? { ...p, stock: Math.max(0, p.stock - vendidos) } : p;
-  });
-  guardar(CLAVES.productos, productos);
+export const getOrdenes = () => request('/boletas');
 
-  return { ordenes, productos };
-};
+export const getOrden = (id) => request(`/boletas/${id}`);
+
+export const getMisOrdenes = () => request('/boletas/mis-boletas');
+
+export const cambiarEstadoOrden = (id, estado) => request(`/boletas/${id}/estado`, { method: 'PUT', body: { estado } });
+
+export const deleteOrden = (id) => request(`/boletas/${id}`, { method: 'DELETE' });
